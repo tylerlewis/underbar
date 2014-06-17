@@ -11,6 +11,13 @@ var _ = {};
     return val;
   };
 
+  _.arrayCheck = function(collection) {
+    if(Array.isArray(collection) === true) {
+      return true;
+    } else {
+      return false;
+    };
+  };
   /**
    * COLLECTIONS
    * ===========
@@ -157,11 +164,15 @@ var _ = {};
   // Calls the method named by methodName on each value in the list.
   // Note: you will nead to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
-    return functionOrKey.apply(this, collection);
     var results = [];
-    for(var i = 0; i < collection.length; i++) {
-      var each = functionOrKey.apply(collection[i], args);
-      results.push(each);
+    if(typeof functionOrKey === "function") {
+      _.each(collection, function(i) {
+        results.push(functionOrKey.apply(i, args));
+      });
+    } else if(typeof functionOrKey === "string") {
+      _.each(collection, function(i) {
+        results.push(i[functionOrKey].apply(i, args))
+      });
     };
     return results;
   };
