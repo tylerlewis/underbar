@@ -191,8 +191,16 @@ var _ = {};
   //     return total + number;
   //   }, 0); // should be 6
   _.reduce = function(collection, iterator, accumulator) {
+    if(accumulator === undefined) {
+      accumulator = collection[0];
+    };
+    var total = accumulator;
+    _.each(collection, function(i) {
+      var update = iterator(total, i);
+      total = update;
+    });
+    return total;
   };
-
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
     // TIP: Many iteration problems can be most easily expressed in
@@ -209,14 +217,53 @@ var _ = {};
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    if(iterator === undefined) {
+      return _.reduce(collection, function(isTrue, item) {
+        if(isTrue === false) {
+          return false;
+        };
+        if(Boolean(item) === false) {
+          return false;
+        } else {
+          return true;
+        };
+      }, true);
+    };
+    return _.reduce(collection, function(isTrue, item) {
+      if(isTrue === false) {
+        return false;
+      };
+      var result = iterator(item);
+      if(Boolean(result) === false) {
+        return false;
+      } else {
+        return true;
+      };
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if(iterator === undefined) {
+      iterator = _.identity;
+    };
+    var check = 0;
+    _.each(collection, function(i) {
+      var x = iterator(i);
+      if(x === true) {
+        check = 1;
+      } else if(Boolean(x) === true) {
+        check = 1;
+      };
+    });
+    if(check === 1) {
+      return true;
+    } else {
+      return false;
+    };
   };
-
 
   /**
    * OBJECTS
@@ -237,11 +284,35 @@ var _ = {};
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var args = [];
+    for(var i = 1; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    };
+    for(var j = 0; j < args.length; j++) {
+      var thisArg = args[j];
+      for(var prop in thisArg) {
+        obj[prop] = thisArg[prop];
+      };
+    };
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var args = [];
+    for(var i = 1; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    };
+    for(var j = 0; j < args.length; j++) {
+      var thisArg = args[j];
+      for(var prop in thisArg) {
+        if(!obj.hasOwnProperty(prop)) {
+          obj[prop] = thisArg[prop];
+        };
+      };
+    };
+    return obj;
   };
 
 
@@ -283,6 +354,15 @@ var _ = {};
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var cache = {};
+    return function() {
+      var key = JSON.stringify(Array.prototype.slice.call(arguments));
+      if(key in cache) {
+        return cache[key];
+      } else {
+        return cache[key] = func.apply(this, arguments);
+      };
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -292,6 +372,13 @@ var _ = {};
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = [];
+    for(var i = 2; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    };
+    return setTimeout(function() {
+      return func.apply(this, args);
+    }, wait);
   };
 
 
@@ -306,6 +393,16 @@ var _ = {};
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var copy = array.slice(0);
+    var count = copy.length;
+    var random = [];
+    while(count > 0) {
+      var randNum = Math.floor((Math.random() * count));
+      random.push(copy[randNum]);
+      copy.splice(randNum, 1);
+      count--;
+    };
+    return random;
   };
 
 
