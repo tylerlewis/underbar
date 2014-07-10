@@ -417,6 +417,39 @@ var _ = {};
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    var sorted = [];
+    while(collection.length > 0) {
+      var greatestItem = collection[0];
+      if(iterator === 'length') {
+        var greatestValue = greatestItem.length;
+      } else {
+        var greatestValue = iterator(greatestItem);
+      }
+      for(var i = 0; i < collection.length; i++) {
+        var item = collection[i];
+        if(iterator === 'length') {
+          var value = item.length;
+        } else {
+          var value = iterator(item);
+        }
+        if(typeof value === 'number') {
+          if(value >= greatestValue) {
+            greatestItem = item;
+            greatestValue = value;
+          }
+        }
+      }
+      if(greatestItem === undefined || greatestValue === undefined) {
+        sorted.push(greatestItem);
+        var remove = collection.indexOf(greatestItem);
+        collection.splice(remove, 1);
+      } else {
+        sorted.unshift(greatestItem)
+        var remove = collection.indexOf(greatestItem);
+        collection.splice(remove, 1);
+      }
+    }
+    return sorted;
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -425,6 +458,25 @@ var _ = {};
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    var args = [];
+    for(var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    var resultArr = [];
+    var count = args[0].length;
+    var place2 = 0;
+    while(count > 0) {
+      var innerArr = [];
+      var place1 = 0;
+      for(var i = place1; i < args.length; i++) {
+        innerArr.push(args[i][place2]);
+        place1++;
+      }
+      place2++
+      resultArr.push(innerArr);
+      count--;
+    }
+    return resultArr;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -432,16 +484,75 @@ var _ = {};
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    var flat = [];
+    var flatter = function(array) {
+      for(var i = 0; i < array.length; i++) {
+        if(Array.isArray(array[i])) {
+          flatter(array[i]);
+        } else {
+          flat.push(array[i]);
+        }
+      }
+    }
+    for(var i = 0; i < nestedArray.length; i++) {
+      var current = nestedArray[i];
+      if(Array.isArray(current)) {
+        flatter(current);
+      } else {
+        flat.push(current);
+      }
+    }
+    return flat;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var args = [];
+    for(var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    var first = args[0];
+    var shared = [];
+    for(var i = 0; i < first.length; i++) {
+      var check = first[i];
+      var isShared = true;
+      for(var j = 1; j < args.length; j++) {
+        if(args[j].indexOf(check) === -1) {
+          var isShared = false;
+          break;
+        }
+      }
+      if(isShared) {
+        shared.push(check);
+      }
+    }
+    return shared;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    var args = [];
+    for(var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    var first = args[0];
+    for(var i = 0; i < first.length; i++) {
+      var check = first[i];
+      var isShared = false;
+      for(var j = 1; j < args.length; j++) {
+        if(args[j].indexOf(check) !== -1) {
+          var isShared = true;
+          break;
+        }
+      }
+      if(isShared) {
+        first.splice(i, 1);
+        i--;
+      }
+    }
+    return first;
   };
 
 
@@ -455,6 +566,7 @@ var _ = {};
   //
   // See the Underbar readme for details.
   _.throttle = function(func, wait) {
+    
   };
 
 }).call(this);
